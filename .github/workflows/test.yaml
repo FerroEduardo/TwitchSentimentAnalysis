@@ -1,0 +1,33 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        service:
+          - name: Chat Reader
+            path: "./chat-reader"
+          - name: Website backend
+            path: "./website/backend"
+
+    name: Test ${{ matrix.service.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ matrix.service.path }}/go.mod
+          cache-dependency-path: ${{ matrix.service.path }}/go.sum
+
+      - name: Build Docker compose
+        shell: bash
+        working-directory: ${{ matrix.service.path }}
+        run: go test ./...
